@@ -9,3 +9,13 @@ python -m pytest -v
 python -m ruff check .
 python -m mypy src
 ```
+
+## 本地启动
+
+```powershell
+docker compose up -d postgres redis
+python scripts/seed_sample_data.py
+python -m uvicorn --app-dir src trading_assistant.web.app:app --reload --port 8000
+```
+
+访问 http://127.0.0.1:8000 查看仪表盘。
