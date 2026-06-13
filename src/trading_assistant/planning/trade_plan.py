@@ -15,6 +15,13 @@ def build_trade_plan(
     atr_pct: float,
     theme: str,
 ) -> TradePlan:
+    if current_price <= 0:
+        msg = "current_price must be greater than 0"
+        raise ValueError(msg)
+    if atr_pct < 0 or atr_pct >= 1:
+        msg = "atr_pct must be greater than or equal to 0 and less than 1"
+        raise ValueError(msg)
+
     entry_low = round(current_price * 1.005, 2)
     entry_high = round(current_price * 1.03, 2)
     stop_loss = round(current_price * (1 - max(0.03, atr_pct)), 2)
@@ -28,7 +35,12 @@ def build_trade_plan(
         portfolio_risk_score=portfolio_risk_score,
         stop_loss_distance_pct=stop_distance_pct,
     )
-    risk_level = RiskLevel.MEDIUM if market_score < 60 else RiskLevel.LOW
+    if portfolio_risk_score >= 70:
+        risk_level = RiskLevel.HIGH
+    elif market_score < 60:
+        risk_level = RiskLevel.MEDIUM
+    else:
+        risk_level = RiskLevel.LOW
 
     return TradePlan(
         symbol=symbol,
