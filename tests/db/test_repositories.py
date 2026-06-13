@@ -27,3 +27,14 @@ def test_holding_repository_upsert_and_list():
     assert len(rows) == 1
     assert rows[0].symbol == "000001"
     assert rows[0].current_price == 10.3
+
+
+def test_build_engine_supports_documented_postgresql_url():
+    engine = build_engine(
+        "postgresql://trading_assistant:trading_assistant@localhost:5432/trading_assistant"
+    )
+    try:
+        assert engine.dialect.name == "postgresql"
+        assert engine.driver == "psycopg2"
+    finally:
+        engine.dispose()
