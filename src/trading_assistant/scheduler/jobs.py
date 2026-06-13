@@ -1,7 +1,26 @@
+from datetime import datetime, timedelta
+
+from trading_assistant.observability import TaskRunLog, build_task_log
+
+
 def build_job_plan() -> dict[str, str]:
     return {
         "daily_after_close": "15:30 拉取行情、计算因子、生成评分、生成交易计划和日报",
         "evening_agent_report": "20:30 处理公告新闻、补充智能体解释",
         "intraday_monitor": "交易时段每 5 分钟检查持仓和候选股关键价位",
         "weekly_review": "周末统计信号表现、回撤、胜率和误判案例",
+    }
+
+
+def build_task_run_logs(trade_date: str) -> dict[str, TaskRunLog]:
+    started_at = datetime.fromisoformat(f"{trade_date}T00:00:00")
+    return {
+        task_name: build_task_log(
+            task_name=task_name,
+            trade_date=trade_date,
+            started_at=started_at + timedelta(minutes=index),
+            finished_at=started_at + timedelta(minutes=index),
+            status="scheduled",
+        )
+        for index, task_name in enumerate(build_job_plan())
     }
