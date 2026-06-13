@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <h1>A 股短线交易辅助系统</h1>
+      <p>盘前、盘中、盘后状态汇总。</p>
+    </div>
+  </section>
+
+  <section class="metric-grid" aria-label="核心指标">
+    <article class="metric-card">
+      <span class="metric-label">市场环境</span>
+      <strong>{{ view.market_score }}</strong>
+      <span class="metric-note">综合评分</span>
+    </article>
+    <article class="metric-card">
+      <span class="metric-label">持仓风险</span>
+      <strong>{{ view.portfolio_risk }}</strong>
+      <span class="metric-note">当前等级</span>
+    </article>
+    <article class="metric-card">
+      <span class="metric-label">重点候选</span>
+      <strong>{{ view.candidate_count }}</strong>
+      <span class="metric-note">待观察标的</span>
+    </article>
+    <article class="metric-card">
+      <span class="metric-label">盘中提醒</span>
+      <strong>{{ view.critical_alerts }}</strong>
+      <span class="metric-note">严重告警</span>
+    </article>
+  </section>
+
+  <section class="section-list" aria-label="工作区">
+    {% for section in view.sections %}
+      <article class="section-card">
+        <h2>{{ section }}</h2>
+        <p>模块已接入仪表盘 shell，等待后续任务填充实时数据。</p>
+      </article>
+    {% endfor %}
+  </section>
+{% endblock %}
