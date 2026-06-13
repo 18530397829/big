@@ -18,3 +18,30 @@ def dashboard(request: Request) -> Response:
         name="dashboard.html",
         context={"request": request, "view": build_dashboard_view()},
     )
+
+
+@router.get("/holdings", response_class=HTMLResponse)
+def holdings(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request=request,
+        name="holdings.html",
+        context={"request": request},
+    )
+
+
+@router.get("/candidates", response_class=HTMLResponse)
+def candidates(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request=request,
+        name="candidates.html",
+        context={"request": request},
+    )
+
+
+@router.get("/backtest", response_class=HTMLResponse)
+def backtest(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request=request,
+        name="backtest.html",
+        context={"request": request},
+    )
