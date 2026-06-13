@@ -11,8 +11,15 @@ def test_dashboard_home_renders():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "A 股短线交易辅助系统" in response.text
-    assert "持仓风险" in response.text
+    expected_labels = [
+        "A 股短线交易辅助系统",
+        "市场环境分",
+        "持仓风险",
+        "重点候选",
+        "P0/P1 提醒",
+    ]
+    missing_labels = [label for label in expected_labels if label not in response.text]
+    assert missing_labels == []
 
 
 def test_dashboard_view_contains_shell_metrics():
