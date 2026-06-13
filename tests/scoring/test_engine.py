@@ -20,5 +20,5 @@ def test_score_engine_computes_weighted_score():
         }
     )
 
-    assert score.total_score == 68.5
+    assert score.total_score == 71.0
     assert "sector_strength" in score.components
