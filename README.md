@@ -10,6 +10,12 @@ python -m ruff check .
 python -m mypy src
 ```
 
+## MVP 验收
+
+MVP 验收清单见 [docs/mvp-acceptance-checklist.md](docs/mvp-acceptance-checklist.md)。
+
+本轮 MVP 验收使用的质量门禁：`pytest -v`、`ruff check .`、`mypy src` 和 Web 服务 smoke 验收。
+
 ## 本地启动
 
 ```powershell
