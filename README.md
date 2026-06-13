@@ -16,6 +16,10 @@ MVP 验收清单见 [docs/mvp-acceptance-checklist.md](docs/mvp-acceptance-check
 
 本轮 MVP 验收使用的质量门禁：`pytest -v`、`ruff check .`、`mypy src` 和 Web 服务 smoke 验收。
 
+## 运行手册
+
+日常启动、盘后任务、盘中提醒、降级策略和备份步骤见 [docs/ops-runbook.md](docs/ops-runbook.md)。
+
 ## 本地启动
 
 ```powershell
@@ -25,3 +29,12 @@ python -m uvicorn --app-dir src trading_assistant.web.app:app --reload --port 80
 ```
 
 访问 http://127.0.0.1:8000 查看仪表盘。
+
+## 最小闭环执行命令
+
+```powershell
+python scripts/seed_sample_data.py
+python scripts/run_daily_after_close.py
+python scripts/run_intraday_monitor.py
+python -m uvicorn --app-dir src trading_assistant.web.app:app --reload --port 8000
+```
