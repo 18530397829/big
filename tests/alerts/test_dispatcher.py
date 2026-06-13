@@ -15,9 +15,14 @@ def test_dispatcher_sends_only_p0_p1_by_default() -> None:
     dispatcher = AlertDispatcher(sender)
     alerts = [
         Alert(AlertLevel.P0, "000001", "跌破硬止损位"),
-        Alert(AlertLevel.P2, "000001", "接近触发价"),
+        Alert(AlertLevel.P1, "000002", "触发减仓提醒"),
+        Alert(AlertLevel.P2, "000003", "接近触发价"),
+        Alert(AlertLevel.P3, "000004", "观察中"),
     ]
 
     dispatcher.dispatch(alerts)
 
-    assert sender.messages == ["[P0] 000001 跌破硬止损位"]
+    assert sender.messages == [
+        "[P0] 000001 跌破硬止损位",
+        "[P1] 000002 触发减仓提醒",
+    ]

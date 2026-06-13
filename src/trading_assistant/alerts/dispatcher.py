@@ -5,7 +5,7 @@ from trading_assistant.alerts.models import Alert, AlertLevel
 
 class TextSender(Protocol):
     def send_text(self, text: str) -> None:
-        raise NotImplementedError
+        ...
 
 
 class AlertDispatcher:
