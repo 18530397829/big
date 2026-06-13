@@ -26,6 +26,74 @@
 
 后续专业行情、半自动交易和本地深度学习模型单独开计划。
 
+### 1.1 MVP 最小闭环
+
+虽然完整第一阶段包含 M1 到 M7，但开发执行必须先打通一条最小闭环，避免先做大量外围能力却无法验证交易辅助价值。
+
+最小闭环顺序：
+
+1. 样例持仓和样例行情可导入；
+2. 可生成持仓风险分和市场环境分；
+3. 可从样例股票池生成 3 到 8 只重点候选；
+4. 每只重点候选都有买入触发、止损、止盈、仓位和失效条件；
+5. 可生成一份盘后 Markdown 报告；
+6. 可触发至少一种 P0/P1 风险提醒；
+7. 可把信号写入信号台账；
+8. 可统计信号后 1、3、5 日表现。
+
+最小闭环完成前，不接入真实券商、不接入 Level-2、不训练本地预测模型、不做多账户权限系统。
+
+### 1.2 迭代时间表
+
+建议按 5 个迭代推进，每个迭代结束都要能演示和验收。
+
+| 迭代 | 建议周期 | 目标 | 对应任务 |
+| --- | --- | --- | --- |
+| Sprint 0 | 2 到 3 天 | 项目骨架、配置、样例数据、CI 检查 | Task 0.1、0.2 |
+| Sprint 1 | 1 周 | 数据、持仓、股票池和基础因子闭环 | Task 1.1 到 2.2 |
+| Sprint 2 | 1 周 | 四类评分、持仓风控、盘中提醒规则 | Task 2.3、3.1、3.2 |
+| Sprint 3 | 1 周 | 候选股、交易计划、盘后报告和 Mock 智能体 | Task 4.1 到 5.3 |
+| Sprint 4 | 1 周 | 仪表盘、推送、调度、信号台账、回测和运行手册 | Task 6.1 到 8.2 |
+
+如果实际人力不足，优先压缩智能体解释和仪表盘美化，不压缩持仓风控、信号台账和回测。
+
+### 1.3 分层交付口径
+
+每个迭代按后端、前端、测试、DevOps 四条线验收：
+
+- 后端：领域模型、规则引擎、数据源适配、报告生成、API 和调度入口；
+- 前端：仪表盘信息架构、持仓页、候选股页、交易计划页、回测页；
+- 测试：单元测试、样例数据集成测试、盘后流程测试、提醒规则测试、回测指标测试；
+- DevOps：环境变量、Docker Compose、日志、CI、备份、运行手册和故障排查清单。
+
+核心交易逻辑必须先有测试再有实现；外部数据源、LLM 和推送服务必须有 Mock，确保本地和 CI 不依赖外部服务。
+
+### 1.4 非功能落地要求
+
+第一阶段的非功能要求不单独做成“大平台工程”，而是分散落实到每个里程碑中。
+
+- 性能：盘后最小闭环目标 10 分钟内完成，完整盘后流程目标 30 分钟内完成；盘中 P0/P1 提醒从数据刷新到生成提醒目标不超过 60 秒。
+- 安全：真实 Token、Webhook 和账户数据只能来自 `.env` 或本地受控配置，不进入 Git；局域网以外访问前必须增加认证和 HTTPS。
+- 可扩展：数据源、LLM、推送渠道都通过接口抽象接入，新增实现不得改动核心规则。
+- 可维护：交易规则、阈值、权重和提示词都必须版本化；新增因子必须同时有测试、解释和回测记录。
+- 可观测：盘后任务、盘中任务、智能体任务和回测任务都必须记录结构化任务日志。
+- 审计：所有信号、提醒、人工处理结果和规则版本必须可追溯，后续半自动交易前再扩展为完整合规审计。
+
+### 1.5 共享对话要求覆盖矩阵
+
+本计划对共享对话中提到的 8 类优化要求做如下覆盖，后续审阅时按本表检查是否遗漏。
+
+| 共享对话要求 | 已补充位置 | 覆盖说明 |
+| --- | --- | --- |
+| 审查并完善需求设计文档，覆盖完整业务逻辑、边界条件、非功能需求 | 需求设计 7.6、7.7、7.8，实施计划 1.4 | 盘后、盘中、复盘主流程构成完整业务逻辑；数据、标的、持仓、智能体边界单列；性能、安全、可扩展性、可维护性、可观测性和审计进入非功能落地要求。 |
+| 优化并拆分第一阶段 MVP 目标，确保可落地、可验证、最小闭环 | 需求设计 11，实施计划 1.1 | 将第一阶段拆成“导入数据 -> 风险评分 -> 市场评分 -> 候选与交易计划 -> 报告 -> 提醒 -> 信号台账 -> 1/3/5 日回测”的最小闭环。 |
+| 将整体系统拆分为模块架构 | 需求设计 7.2、实施计划 3 和 3.1 | 明确 data_sources、factors、scoring、portfolio、planning、agents、alerts、backtest、web 等模块边界。 |
+| 输出详细分层架构设计，覆盖前端、后端、数据、基础设施 | 需求设计 7.5，实施计划 3.1 | 将前端展示层、后端应用层、领域规则层、数据访问层、智能体解释层、基础设施层映射到目录和禁止事项。 |
+| 将 MVP 拆分为可执行的开发里程碑与迭代计划 | 实施计划 1.2、4 | 增加 Sprint 0 到 Sprint 4 的开发里程碑和迭代计划，并保留阶段 0 到阶段 8 的执行顺序。 |
+| 为每个阶段提供具体开发任务清单，按后端、前端、测试、DevOps 拆分 | 实施计划 1.3、阶段 0 到阶段 8 | 每个 Task 保留文件、测试、实现、验证和提交步骤；1.3 单列后端、前端、测试、DevOps 的分层交付口径。 |
+| 识别潜在风险与技术债务 | 需求设计 13.1、实施计划 8.5 | 补充数据风险、策略风险、工程风险、合规风险和技术债治理原则，并新增风险与技术债登记表任务。 |
+| 提出优化建议与最佳实践 | 需求设计 7.8、13.1，实施计划 1.4、3.2、8.3 到 8.5 | 明确 Mock 外部依赖、配置化阈值、结构化日志、信号可追溯、规则版本化、运行手册、数据质量检查和风险债务登记等最佳实践。 |
+
 ## 2. 仓库结构
 
 执行计划前，仓库从空目录开始。建议创建以下结构。
@@ -173,6 +241,26 @@
 - `alerts/`：只负责提醒分级、去重和发送。
 - `backtest/`：只负责信号记录、回测和指标。
 - `web/`：只负责展示，不写交易决策逻辑。
+
+### 3.1 分层架构到目录映射
+
+| 层级 | 目录或组件 | 主要职责 | 禁止事项 |
+| --- | --- | --- | --- |
+| 前端展示层 | `web/templates`、`web/static`、`web/view_models.py` | 展示持仓、候选股、交易计划、提醒、回测摘要 | 不计算评分，不修改风控阈值 |
+| 后端应用层 | `web/app.py`、`web/routes.py`、`scheduler/jobs.py`、`scripts/` | API、页面路由、任务编排、命令入口 | 不写具体交易规则 |
+| 领域规则层 | `factors/`、`scoring/`、`portfolio/`、`planning/`、`alerts/rules.py` | 因子、评分、风控、候选、仓位、提醒规则 | 不直接访问外部网络和 LLM |
+| 数据访问层 | `data_sources/`、`db/`、`backtest/signal_ledger.py` | 数据源协议、数据清洗、持久化、信号台账 | 不决定买卖动作 |
+| 智能体解释层 | `agents/`、`reporting/` | 结构化公告新闻、解释评分、生成报告 | 不覆盖硬风控，不生成新的买卖规则 |
+| 基础设施层 | `docker-compose.yml`、`.env.example`、`config/`、`docs/ops-runbook.md` | 本地依赖、配置、运行手册、运维约束 | 不保存真实密钥 |
+
+### 3.2 跨层接口约定
+
+- 领域层输入和输出优先使用 dataclass 或 Pydantic 模型，避免裸 dict 在多层传递；
+- 数据源输出必须带 `source`、`as_of`、`trade_date` 和质量状态；
+- 评分输出必须带总分、组件分、触发因子和解释原因；
+- 交易计划输出必须带买入触发、止损、止盈、仓位、失效条件和风险等级；
+- 智能体输出必须是结构化 JSON 或固定 Markdown 模板，不返回不可解析的自由文本给核心流程；
+- Web 层只读取 view model，不直接调用外部数据源和 LLM。
 
 ## 4. 执行顺序总览
 
@@ -3703,6 +3791,166 @@ http://127.0.0.1:8000
 ```powershell
 git add README.md docs/mvp-acceptance-checklist.md
 git commit -m "docs: add MVP acceptance checklist"
+```
+
+### Task 8.3: 创建运行手册和故障处理清单
+
+**Files:**
+- Create: `docs/ops-runbook.md`
+- Modify: `README.md`
+- Create: `tests/test_ops_docs_exist.py`
+
+- [ ] **Step 1: 写运行文档存在性测试**
+
+创建 `tests/test_ops_docs_exist.py`：
+
+```python
+from pathlib import Path
+
+
+def test_ops_runbook_exists_and_mentions_core_workflows():
+    text = Path("docs/ops-runbook.md").read_text(encoding="utf-8")
+
+    assert "盘后任务" in text
+    assert "盘中提醒" in text
+    assert "数据源失败" in text
+    assert "备份" in text
+```
+
+- [ ] **Step 2: 创建运行手册**
+
+创建 `docs/ops-runbook.md`，至少包含：
+
+- 本地启动和停止；
+- 环境变量说明；
+- 盘后任务执行步骤；
+- 盘中提醒执行步骤；
+- 样例数据重置步骤；
+- 数据源失败时的降级策略；
+- LLM 或 Webhook 不可用时的处理方式；
+- PostgreSQL 和本地报告备份方式；
+- 常见错误排查；
+- 每日运维检查清单。
+
+- [ ] **Step 3: 更新 README 入口**
+
+在 `README.md` 增加运行手册链接和最小闭环执行命令。
+
+- [ ] **Step 4: 运行测试并提交**
+
+Run:
+
+```powershell
+python -m pytest tests/test_ops_docs_exist.py -v
+```
+
+Expected:
+
+```text
+1 passed
+```
+
+提交：
+
+```powershell
+git add README.md docs/ops-runbook.md tests/test_ops_docs_exist.py
+git commit -m "docs: add operations runbook"
+```
+
+### Task 8.4: 增加数据质量和可观测性要求
+
+**Files:**
+- Create: `src/trading_assistant/observability/__init__.py`
+- Create: `src/trading_assistant/observability/task_log.py`
+- Create: `src/trading_assistant/data_sources/quality.py`
+- Create: `tests/observability/test_task_log.py`
+- Create: `tests/data_sources/test_quality.py`
+
+- [ ] **Step 1: 写任务日志和数据质量测试**
+
+测试应覆盖：
+
+- 任务日志包含任务名、交易日、开始时间、结束时间、输入数量、输出数量、状态和错误原因；
+- 行情数据缺失关键列时返回失败；
+- 行情数据存在重复股票和交易日时返回警告；
+- 数据质量失败时，上层流程可以把标的降级为观察或禁入，而不是继续生成交易计划。
+
+- [ ] **Step 2: 实现最小可观测性工具**
+
+实现 `TaskRunLog` 和 `DataQualityResult` 等轻量对象，不急着接入完整 OpenTelemetry。第一阶段先确保日志结构稳定，后续再扩展到 Prometheus 或 OpenTelemetry。
+
+- [ ] **Step 3: 把任务日志接入关键入口**
+
+至少接入：
+
+- 盘后任务；
+- 盘中监控任务；
+- 智能体报告任务；
+- 回测任务。
+
+- [ ] **Step 4: 运行测试并提交**
+
+Run:
+
+```powershell
+python -m pytest tests/observability tests/data_sources -v
+```
+
+Expected:
+
+```text
+所有相关测试通过
+```
+
+提交：
+
+```powershell
+git add src/trading_assistant/observability src/trading_assistant/data_sources/quality.py tests/observability tests/data_sources
+git commit -m "feat: add data quality and task observability"
+```
+
+### Task 8.5: 创建风险与技术债登记表
+
+**Files:**
+- Create: `docs/risk-and-debt-register.md`
+- Modify: `docs/mvp-acceptance-checklist.md`
+
+- [ ] **Step 1: 创建风险与技术债登记表**
+
+创建 `docs/risk-and-debt-register.md`，按以下分类维护：
+
+- 数据源风险；
+- 策略和回测风险；
+- 工程稳定性风险；
+- 安全与权限风险；
+- 合规边界风险；
+- 已接受的技术债；
+- 必须在进入下一阶段前偿还的技术债。
+
+每条记录至少包含：
+
+- 描述；
+- 影响；
+- 触发条件；
+- 缓解措施；
+- 负责人；
+- 状态；
+- 复查日期。
+
+- [ ] **Step 2: 把登记表纳入 MVP 验收**
+
+在 `docs/mvp-acceptance-checklist.md` 增加：
+
+- [ ] 所有 P0/P1 风险都有缓解措施；
+- [ ] 所有外部数据源都有 Mock 或样例数据回退；
+- [ ] 所有已知技术债都有负责人和复查日期；
+- [ ] 下一阶段前必须偿还的技术债没有遗漏。
+
+- [ ] **Step 3: 提交**
+
+```powershell
+git add docs/risk-and-debt-register.md docs/mvp-acceptance-checklist.md
+git commit -m "docs: track MVP risks and technical debt"
 ```
 
 ---
