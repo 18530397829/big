@@ -1,0 +1,12 @@
+max_single_position_pct: 0.10
+max_total_position_pct: 0.50
+max_theme_position_pct: 0.20
+default_stop_loss_pct: 0.04
+hard_stop_loss_pct: 0.05
+first_take_profit_pct: 0.06
+second_take_profit_pct: 0.10
+max_gap_up_for_entry_pct: 0.03
+min_reward_risk_ratio: 1.5
+market_score_no_new_position: 40
+market_score_light_position: 60
+high_portfolio_risk_no_new_position: 70

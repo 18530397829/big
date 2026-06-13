@@ -1,0 +1,14 @@
+exclude_st: true
+exclude_delisting_risk: true
+min_daily_turnover_cny: 100000000
+min_listing_days: 60
+exclude_limit_down_days: 2
+exclude_one_word_limit_up: true
+watch_boards:
+  - 创业板
+  - 科创板
+  - 北交所
+tradable_boards:
+  - 沪市主板
+  - 深市主板
+  - 创业板

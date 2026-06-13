@@ -1,0 +1,3 @@
+symbol,name,quantity,cost_price,current_price,buy_date,theme,buy_reason
+000001,平安银行,1000,10.00,10.30,2026-06-10,银行,放量突破平台
+600519,贵州茅台,10,1500.00,1518.00,2026-06-11,白酒,缩量回踩支撑
