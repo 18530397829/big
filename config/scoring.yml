@@ -1,0 +1,30 @@
+portfolio_risk:
+  technical_breakdown: 0.25
+  volume_price_deterioration: 0.20
+  sector_cooling: 0.15
+  market_environment: 0.15
+  fund_outflow: 0.10
+  negative_event: 0.10
+  holding_drawdown: 0.05
+market_environment:
+  index_trend: 0.25
+  market_turnover: 0.20
+  advance_decline: 0.20
+  limit_up_down_structure: 0.15
+  sector_persistence: 0.15
+  external_risk: 0.05
+short_term_opportunity:
+  sector_strength: 0.25
+  volume_price_structure: 0.25
+  technical_pattern: 0.20
+  market_environment: 0.10
+  event_catalyst: 0.10
+  fund_behavior: 0.05
+  sentiment_heat: 0.05
+plan_confidence:
+  stop_loss_clarity: 0.25
+  entry_clarity: 0.20
+  reward_risk_ratio: 0.20
+  liquidity: 0.15
+  gap_up_chase_risk: 0.10
+  invalidation_clarity: 0.10

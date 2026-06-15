@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}A 股短线交易辅助系统{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="app-header__inner">
+        <a class="app-brand" href="/">A 股短线交易辅助系统</a>
+        <nav class="app-nav" aria-label="主导航">
+          <a href="/">仪表盘</a>
+          <a href="/holdings">持仓风险</a>
+          <a href="/candidates">重点候选</a>
+          <a href="/backtest">回测复盘</a>
+        </nav>
+      </div>
+    </header>
+    <main class="app-main">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

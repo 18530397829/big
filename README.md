@@ -1,37 +1,40 @@
-# big
+# A 股保守型短线交易辅助系统
 
-A 股保守型短线交易辅助系统项目资料。
+第一阶段目标：盘后选股、持仓风控、完整交易计划、盘中分级提醒、智能体解释和回测复盘。
 
-本仓库当前保存第一阶段需求设计和实施计划，目标是建设一个面向 1 到 5 个交易日周期的 A 股短线交易辅助系统，优先处理已有持仓风险，再判断市场环境，最后筛选新机会。
+## 本地测试
 
-## 当前核心文档
+```powershell
+python -m pytest -v
+python -m ruff check .
+python -m mypy src
+```
 
-- `docs/superpowers/specs/2026-06-13-a-share-short-term-trading-assistant-design.md`：中文正式需求设计。
-- `docs/superpowers/plans/2026-06-13-a-share-short-term-trading-assistant-implementation.md`：中文详细实施计划。
+## MVP 验收
 
-## 设计原则
+MVP 验收清单见 [docs/mvp-acceptance-checklist.md](docs/mvp-acceptance-checklist.md)。
 
-- 持仓风控优先于新开仓。
-- 第一阶段只做人机辅助，不自动下单。
-- 规则引擎负责最终评分和硬风控。
-- 大模型和智能体只做公告、新闻、题材、风险和报告解释。
-- 所有信号必须可解释、可追溯、可回测。
-- DGX Spark 优先用于数据处理、因子计算、回测、批量摘要和后续模型实验。
+本轮 MVP 验收使用的质量门禁：`pytest -v`、`ruff check .`、`mypy src` 和 Web 服务 smoke 验收。
 
-## 第一阶段范围
+## 运行手册
 
-- 数据与持仓底座。
-- 因子与评分引擎。
-- 持仓风控与卖出规则。
-- 盘后选股与完整交易计划。
-- 智能体与报告。
-- 仪表盘与提醒。
-- 回测与复盘。
+日常启动、盘后任务、盘中提醒、降级策略和备份步骤见 [docs/ops-runbook.md](docs/ops-runbook.md)。
 
-## 暂不包含
+## 本地启动
 
-- 自动下单。
-- 券商接口。
-- Level-2、逐笔成交、委托队列。
-- 程序化交易合规自动化。
-- 本地深度学习预测模型训练。
+```powershell
+docker compose up -d postgres redis
+python scripts/seed_sample_data.py
+python -m uvicorn --app-dir src trading_assistant.web.app:app --reload --port 8000
+```
+
+访问 http://127.0.0.1:8000 查看仪表盘。
+
+## 最小闭环执行命令
+
+```powershell
+python scripts/seed_sample_data.py
+python scripts/run_daily_after_close.py
+python scripts/run_intraday_monitor.py
+python -m uvicorn --app-dir src trading_assistant.web.app:app --reload --port 8000
+```
