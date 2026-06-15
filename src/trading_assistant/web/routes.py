@@ -5,7 +5,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.responses import Response
 
-from trading_assistant.web.view_models import build_dashboard_view
+from trading_assistant.web.view_models import (
+    build_backtest_view,
+    build_candidates_view,
+    build_dashboard_view,
+    build_holdings_view,
+)
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
@@ -25,7 +30,7 @@ def holdings(request: Request) -> Response:
     return templates.TemplateResponse(
         request=request,
         name="holdings.html",
-        context={"request": request},
+        context={"request": request, "view": build_holdings_view()},
     )
 
 
@@ -34,7 +39,7 @@ def candidates(request: Request) -> Response:
     return templates.TemplateResponse(
         request=request,
         name="candidates.html",
-        context={"request": request},
+        context={"request": request, "view": build_candidates_view()},
     )
 
 
@@ -43,5 +48,5 @@ def backtest(request: Request) -> Response:
     return templates.TemplateResponse(
         request=request,
         name="backtest.html",
-        context={"request": request},
+        context={"request": request, "view": build_backtest_view()},
     )

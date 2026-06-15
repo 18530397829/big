@@ -1,6 +1,6 @@
 import pytest
 
-from trading_assistant.domain.enums import ActionAdvice, RiskLevel
+from trading_assistant.domain.enums import ActionAdvice
 from trading_assistant.planning.position_sizing import compute_position_pct
 from trading_assistant.planning.trade_plan import build_trade_plan
 
@@ -92,12 +92,40 @@ def test_compute_position_pct_applies_conservative_rules(
     assert compute_position_pct(**kwargs) == expected
 
 
-def test_build_trade_plan_marks_high_portfolio_risk_as_high_no_action() -> None:
-    plan = _build_trade_plan(portfolio_risk_score=70)
+def test_compute_position_pct_uses_risk_configured_max_single_position() -> None:
+    position_pct = compute_position_pct(
+        opportunity_score=90,
+        plan_confidence_score=90,
+        market_score=80,
+        portfolio_risk_score=20,
+        stop_loss_distance_pct=0.02,
+        risk_config={"max_single_position_pct": 0.08},
+    )
 
-    assert plan.position_pct == 0.0
-    assert plan.risk_level == RiskLevel.HIGH
-    assert plan.action_advice == ActionAdvice.NO_ACTION
+    assert position_pct == 0.08
+
+
+def test_build_trade_plan_rejects_high_portfolio_risk_for_new_positions() -> None:
+    with pytest.raises(ValueError, match="portfolio_risk_score"):
+        _build_trade_plan(portfolio_risk_score=70)
+
+
+def test_build_trade_plan_rejects_weak_market_for_new_positions() -> None:
+    with pytest.raises(ValueError, match="market_score"):
+        _build_trade_plan(market_score=39)
+
+
+def test_build_trade_plan_rejects_insufficient_reward_risk_ratio() -> None:
+    with pytest.raises(ValueError, match="reward/risk"):
+        _build_trade_plan(atr_pct=0.20)
+
+
+def test_build_trade_plan_uses_risk_configured_no_new_position_thresholds() -> None:
+    with pytest.raises(ValueError, match="market_score"):
+        _build_trade_plan(
+            market_score=49,
+            risk_config={"market_score_no_new_position": 50},
+        )
 
 
 @pytest.mark.parametrize("current_price", [0.0, -1.0])

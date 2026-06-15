@@ -6,7 +6,27 @@
   <section class="page-heading">
     <div>
       <h1>重点候选</h1>
-      <p>重点候选页面占位。</p>
+      {% if view is defined %}
+        <p>从样例日线、板块和事件数据筛选出 {{ view.candidate_count }} 只候选。</p>
+      {% else %}
+        <p>页面数据加载中，请重启服务后刷新。</p>
+      {% endif %}
     </div>
   </section>
+
+  {% if view is defined %}
+    <section class="section-list" aria-label="候选列表">
+      {% for candidate in view.candidates %}
+        <article class="section-card">
+          <h2>{{ candidate.symbol }} {{ candidate.name }}</h2>
+          <p>机会分 {{ candidate.opportunity_score }} / 计划置信 {{ candidate.plan_confidence_score }}</p>
+          <p>{{ candidate.reasons }}</p>
+        </article>
+      {% endfor %}
+    </section>
+  {% else %}
+    <section class="section-card" aria-label="候选列表">
+      <p>页面数据加载中，请重启服务后刷新。</p>
+    </section>
+  {% endif %}
 {% endblock %}

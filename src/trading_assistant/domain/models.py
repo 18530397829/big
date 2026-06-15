@@ -1,6 +1,6 @@
 from datetime import UTC, date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from trading_assistant.domain.enums import ActionAdvice, PoolType, RiskLevel
 
@@ -47,6 +47,25 @@ class TradePlan(BaseModel):
     risk_level: RiskLevel
     action_advice: ActionAdvice
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    @model_validator(mode="after")
+    def validate_price_relationships(self) -> "TradePlan":
+        if self.entry_price_high < self.entry_price_low:
+            msg = "entry_price_high must be greater than or equal to entry_price_low"
+            raise ValueError(msg)
+        if self.stop_loss_price >= self.entry_price_low:
+            msg = "stop_loss_price must be less than entry_price_low"
+            raise ValueError(msg)
+        if self.first_take_profit_price <= self.entry_price_high:
+            msg = "first_take_profit_price must be greater than entry_price_high"
+            raise ValueError(msg)
+        if self.second_take_profit_price < self.first_take_profit_price:
+            msg = (
+                "second_take_profit_price must be greater than or equal to "
+                "first_take_profit_price"
+            )
+            raise ValueError(msg)
+        return self
 
     @property
     def reward_risk_ratio(self) -> float:

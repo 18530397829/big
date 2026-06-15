@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from trading_assistant.observability import TaskRunLog, build_task_log
 
@@ -13,7 +13,7 @@ def build_job_plan() -> dict[str, str]:
 
 
 def build_task_run_logs(trade_date: str) -> dict[str, TaskRunLog]:
-    started_at = datetime.fromisoformat(f"{trade_date}T00:00:00")
+    started_at = datetime.fromisoformat(f"{trade_date}T00:00:00").replace(tzinfo=UTC)
     return {
         task_name: build_task_log(
             task_name=task_name,

@@ -14,7 +14,10 @@ class TaskRunLog:
     error_reason: str | None = None
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        data = asdict(self)
+        data["started_at"] = self.started_at.isoformat()
+        data["finished_at"] = self.finished_at.isoformat()
+        return data
 
 
 def build_task_log(

@@ -6,7 +6,67 @@
   <section class="page-heading">
     <div>
       <h1>回测复盘</h1>
-      <p>回测复盘页面占位。</p>
+      {% if view is defined %}
+        <p>{{ view.summary.signal_count }} 条样例信号，1日胜率 {{ view.summary.win_rate_1d }}，1日平均收益 {{ view.summary.avg_return_1d }}，最大回撤 {{ view.summary.max_drawdown_1d }}，盈亏比 {{ view.summary.profit_loss_ratio_1d }}。</p>
+      {% else %}
+        <p>页面数据加载中，请重启服务后刷新。</p>
+      {% endif %}
     </div>
   </section>
+
+  {% if view is defined %}
+    <section class="metric-grid" aria-label="回测指标">
+      <article class="metric-card">
+        <span class="metric-label">交易成本</span>
+        <strong>{{ view.summary.transaction_cost_rate }}</strong>
+        <span class="metric-note">单笔成本率</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">扣成本胜率</span>
+        <strong>{{ view.summary.net_win_rate_1d }}</strong>
+        <span class="metric-note">1 日净收益</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">错误卖出率</span>
+        <strong>{{ view.summary.false_sell_rate_5d }}</strong>
+        <span class="metric-note">5 日收益转正</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">错过反弹率</span>
+        <strong>{{ view.summary.missed_rebound_rate_5d }}</strong>
+        <span class="metric-note">5 日最大反弹超过 3%</span>
+      </article>
+    </section>
+
+    <section class="section-card" aria-label="样例信号回测">
+      <table>
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>代码</th>
+            <th>名称</th>
+            <th>信号分</th>
+            <th>1日收益</th>
+            <th>5日最大反弹</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for signal in view.signals %}
+            <tr>
+              <td>{{ signal.trade_date }}</td>
+              <td>{{ signal.symbol }}</td>
+              <td>{{ signal.name }}</td>
+              <td>{{ signal.score }}</td>
+              <td>{{ signal.return_1d }}</td>
+              <td>{{ signal.max_return_5d }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% else %}
+    <section class="section-card" aria-label="样例信号回测">
+      <p>页面数据加载中，请重启服务后刷新。</p>
+    </section>
+  {% endif %}
 {% endblock %}

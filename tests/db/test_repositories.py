@@ -2,6 +2,7 @@ from datetime import date
 
 from trading_assistant.db.base import Base
 from trading_assistant.db.repositories import HoldingRepository
+from trading_assistant.db import session as db_session
 from trading_assistant.db.session import build_engine, build_session_factory
 
 
@@ -38,3 +39,44 @@ def test_build_engine_supports_documented_postgresql_url():
         assert engine.driver == "psycopg2"
     finally:
         engine.dispose()
+
+
+def test_build_engine_adds_sqlite_threading_connect_args(monkeypatch):
+    captured: dict[str, object] = {}
+    sentinel = object()
+
+    def fake_create_engine(database_url: str, **kwargs: object) -> object:
+        captured["database_url"] = database_url
+        captured.update(kwargs)
+        return sentinel
+
+    monkeypatch.setattr(db_session, "create_engine", fake_create_engine)
+
+    engine = db_session.build_engine("sqlite:///./trading_assistant.db")
+
+    assert engine is sentinel
+    assert captured == {
+        "database_url": "sqlite:///./trading_assistant.db",
+        "future": True,
+        "connect_args": {"check_same_thread": False},
+    }
+
+
+def test_build_engine_does_not_add_sqlite_connect_args_to_other_databases(monkeypatch):
+    captured: dict[str, object] = {}
+    sentinel = object()
+
+    def fake_create_engine(database_url: str, **kwargs: object) -> object:
+        captured["database_url"] = database_url
+        captured.update(kwargs)
+        return sentinel
+
+    monkeypatch.setattr(db_session, "create_engine", fake_create_engine)
+
+    engine = db_session.build_engine("postgresql://user:pass@localhost:5432/app")
+
+    assert engine is sentinel
+    assert captured == {
+        "database_url": "postgresql://user:pass@localhost:5432/app",
+        "future": True,
+    }

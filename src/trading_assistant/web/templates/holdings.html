@@ -6,7 +6,48 @@
   <section class="page-heading">
     <div>
       <h1>持仓风险</h1>
-      <p>持仓风险页面占位。</p>
+      {% if view is defined %}
+        <p>{{ view.summary.holding_count }} 只持仓，总市值 {{ view.summary.total_market_value }}，最高风险 {{ view.summary.max_risk_level }}。</p>
+      {% else %}
+        <p>页面数据加载中，请重启服务后刷新。</p>
+      {% endif %}
     </div>
   </section>
+
+  {% if view is defined %}
+    <section class="section-card" aria-label="持仓明细">
+      <table>
+        <thead>
+          <tr>
+            <th>代码</th>
+            <th>名称</th>
+            <th>数量</th>
+            <th>市值</th>
+            <th>浮盈亏</th>
+            <th>风险</th>
+            <th>建议</th>
+            <th>原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for holding in view.holdings %}
+            <tr>
+              <td>{{ holding.symbol }}</td>
+              <td>{{ holding.name }}</td>
+              <td>{{ holding.quantity }}</td>
+              <td>{{ holding.market_value }}</td>
+              <td>{{ holding.unrealized_return_pct }}</td>
+              <td>{{ holding.risk_level }}</td>
+              <td>{{ holding.action_advice }}</td>
+              <td>{{ holding.reasons }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% else %}
+    <section class="section-card" aria-label="持仓明细">
+      <p>页面数据加载中，请重启服务后刷新。</p>
+    </section>
+  {% endif %}
 {% endblock %}

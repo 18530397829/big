@@ -17,12 +17,20 @@
     <article class="metric-card">
       <span class="metric-label">持仓风险</span>
       <strong>{{ view.portfolio_risk }}</strong>
-      <span class="metric-note">当前等级</span>
+      {% if view.holding_count is defined and view.total_market_value is defined %}
+        <span class="metric-note">{{ view.holding_count }} 只持仓 / 市值 {{ view.total_market_value }}</span>
+      {% else %}
+        <span class="metric-note">当前等级</span>
+      {% endif %}
     </article>
     <article class="metric-card">
       <span class="metric-label">重点候选</span>
       <strong>{{ view.candidate_count }}</strong>
-      <span class="metric-note">待观察标的</span>
+      {% if view.top_candidate is defined %}
+        <span class="metric-note">{{ view.top_candidate }}</span>
+      {% else %}
+        <span class="metric-note">待观察标的</span>
+      {% endif %}
     </article>
     <article class="metric-card">
       <span class="metric-label">P0/P1 提醒</span>
@@ -34,8 +42,15 @@
   <section class="section-list" aria-label="工作区">
     {% for section in view.sections %}
       <article class="section-card">
-        <h2>{{ section }}</h2>
-        <p>模块已接入仪表盘 shell，等待后续任务填充实时数据。</p>
+        {% if section is mapping %}
+          <h2>{{ section["title"] }}</h2>
+          {% if section["summary"] is defined %}
+            <p>{{ section["summary"] }}</p>
+          {% endif %}
+        {% else %}
+          <h2>{{ section }}</h2>
+          <p>模块已接入仪表盘 shell，等待后续任务填充实时数据。</p>
+        {% endif %}
       </article>
     {% endfor %}
   </section>
