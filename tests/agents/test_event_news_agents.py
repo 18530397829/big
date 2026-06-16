@@ -6,10 +6,15 @@ from pydantic import ValidationError
 from trading_assistant.agents.event_agent import EventAgent
 from trading_assistant.agents.llm_client import MockLLMClient
 from trading_assistant.agents.news_agent import NewsAgent
+from trading_assistant.agents.prompts import EVENT_EXTRACTION_SYSTEM_PROMPT
 
 
 def _json_response(payload: dict[str, object]) -> str:
     return json.dumps(payload)
+
+
+def test_event_prompt_requires_source_required_boolean():
+    assert "source_required must be a JSON boolean true or false" in EVENT_EXTRACTION_SYSTEM_PROMPT
 
 
 def test_event_agent_extracts_negative_event():

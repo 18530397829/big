@@ -1,6 +1,6 @@
 # 真实外部集成验收 Runbook
 
-目标：在进入第二阶段前，用真实 AKShare/Tushare、真实 LLM 和真实飞书 Webhook 完成一次可复现的端到端稳定性验收。
+目标：在进入第二阶段前，用真实 AKShare、真实本地 LLM 和真实飞书 Webhook 完成一次可复现的端到端稳定性验收。Tushare 是可选增强项，不阻断核心业务闭环准入。
 
 ## 前置条件
 
@@ -12,8 +12,10 @@
 ## 环境准备
 
 ```powershell
-$env:TUSHARE_TOKEN = "<local-token>"
+$env:TUSHARE_TOKEN = "<optional-local-token>"
 $env:OPENAI_API_KEY = "<local-key>"
+$env:OPENAI_BASE_URL = "http://127.0.0.1:8317/v1"
+$env:OPENAI_MODEL = "gpt-5.4-mini"
 $env:FEISHU_WEBHOOK_URL = "<local-webhook>"
 .\.venv\Scripts\python.exe -m pytest
 ```
@@ -23,6 +25,24 @@ $env:FEISHU_WEBHOOK_URL = "<local-webhook>"
 ```powershell
 $stamp = Get-Date -Format yyyyMMdd-HHmmss
 New-Item -ItemType Directory -Force "data/reports/integration-$stamp"
+```
+
+统一 smoke 入口。默认不会向飞书测试群发送消息，避免日常完整流程重复刷屏；需要真实飞书验收时必须显式增加 `--send-feishu`。`--require-real` 只要求核心必需链路（AKShare、本地 LLM、飞书）真实通过；Tushare 会进入报告，但不阻断退出码。
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_integration_acceptance.py --send-feishu --require-real --report-dir "data/reports/integration-$stamp"
+```
+
+日常检查真实 AKShare、本地 LLM、报告生成和脱敏时，不发送飞书消息：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_integration_acceptance.py --report-dir "data/reports/integration-$stamp"
+```
+
+如果真实源当前日期窗口不可用，可显式固定验收日期窗口，报告会记录 `start_date` 和 `end_date`：
+
+```powershell
+$env:ACCEPTANCE_END_DATE = "2024-06-15"
 ```
 
 ## AKShare 验收
@@ -43,19 +63,22 @@ New-Item -ItemType Directory -Force "data/reports/integration-$stamp"
 - 字段名归一化后与 Provider 协议一致。
 - 异常路径不会中断整个盘后流程。
 
-## Tushare 验收
+## Tushare 可选增强验收
+
+Tushare 当前定位为可选增强数据源。没有 token、token 权限不足、`daily` 接口未开通或外部服务不可用时，验收报告必须记录状态和脱敏错误，但不阻断 `AKShare + 本地 LLM + 飞书` 核心闭环准入。
 
 验收动作：
 
-1. 使用 `TUSHARE_TOKEN` 初始化真实 Tushare client。
+1. 如果配置了 `TUSHARE_TOKEN`，初始化真实 Tushare client。
 2. 拉取最近 10 个交易日的日线数据。
 3. 校验字段归一化和数值可用性。
-4. 删除或置空 `TUSHARE_TOKEN`，确认系统按运行手册降级到 AKShare 或样例数据。
+4. 删除或置空 `TUSHARE_TOKEN`，确认报告记录为可选跳过，系统继续使用 AKShare。
 
 通过标准：
 
-- Token 有效时返回非空数据。
-- Token 缺失或接口异常时不泄露 token，不生成可执行买入计划。
+- Token 有效且具备 `daily` 权限时返回非空数据。
+- Token 缺失或接口权限不足时不泄露 token，并标记为可选增强不可用。
+- Tushare 不参与核心准入退出码。
 
 ## 真实 LLM 验收
 
@@ -83,7 +106,7 @@ New-Item -ItemType Directory -Force "data/reports/integration-$stamp"
 验收动作：
 
 1. 使用测试群机器人配置 `FEISHU_WEBHOOK_URL`。
-2. 发送 P0 文本、P1 文本和普通摘要各 1 条。
+2. 执行带 `--send-feishu` 的验收命令，发送 P0 文本、P1 文本和普通摘要各 1 条。
 3. 临时改成无效 URL，确认非 2xx 或网络异常会被记录。
 4. 重复发送同一 P0/P1 摘要，确认调度层不会无限重复推送。
 
@@ -113,10 +136,11 @@ New-Item -ItemType Directory -Force "data/reports/integration-$stamp"
 
 ## 第二阶段准入结论
 
-只有满足以下条件，才能把真实外部链路标记为已验收：
+只有满足以下条件，才能把核心真实外部链路标记为已验收：
 
-- AKShare 和 Tushare 至少各完成一次真实源 smoke。
+- AKShare 完成一次真实源 smoke。
 - 真实 LLM adapter 完成结构化输出 smoke。
 - 飞书测试群收到 P0/P1。
+- Tushare 状态已进入报告；可通过、可跳过或可选失败，但不阻断核心准入。
 - 所有失败路径均有降级或人工复核路径。
 - 归档日志已脱敏，且未提交真实密钥。

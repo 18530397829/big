@@ -14,9 +14,9 @@
 
 最近一次执行结果：
 
-- `pytest`：139 passed，1 warning。
+- `pytest`：156 passed，1 warning。
 - `ruff`：All checks passed。
-- `mypy`：Success，59 个源文件无类型错误。
+- `mypy`：Success，60 个源文件无类型错误。
 
 ## 验收项与证据
 
@@ -24,6 +24,7 @@
 | --- | --- | --- |
 | M1 数据与持仓底座 | 能读取示例持仓 | `tests/portfolio/test_importer.py`、`tests/db/test_repositories.py`、`tests/scripts/test_entrypoints.py` |
 | M1 数据与持仓底座 | 能读取示例日线、分钟线和板块数据 | `tests/web/test_app.py`、`tests/factors/test_core_factors.py`、`data/samples/daily_bars.csv`、`data/samples/minute_bars.csv`、`data/samples/sectors.csv` |
+| M1 数据与持仓底座 | 能使用 AKShare 历史数据支撑本地验收样本 | `data/samples/akshare_acceptance_daily_bars.csv`、`tests/data_sources/test_acceptance_samples.py` |
 | M1 数据与持仓底座 | 能区分可交易池、观察池、禁入池和持仓池 | `tests/pools/test_classifier.py`、`tests/test_domain_models.py` |
 | M2 因子与评分引擎 | 能计算技术、量价、市场和板块因子 | `tests/factors/test_core_factors.py`、`tests/scoring/test_engine.py` |
 | M2 因子与评分引擎 | 能加载权重 | `tests/scoring/test_engine.py`、`config/scoring_weights.yaml` |
@@ -50,4 +51,21 @@
 
 ## 真实外部链路状态
 
-真实 AKShare/Tushare、真实 LLM、真实飞书 Webhook 端到端稳定性验收尚未执行。本文件只证明 MVP 的本地自动化验收；真实外部链路必须按 `docs/integration-acceptance-runbook.md` 单独执行并归档日志。
+核心真实外部链路已按 [docs/integration-acceptance-runbook.md](integration-acceptance-runbook.md) 执行并归档。当前第一阶段核心准入口径为 `AKShare + 本地 LLM + 飞书`，Tushare 为可选增强项，不阻断核心业务闭环。
+
+最新核心真实验收报告：
+
+- 报告文件：`data/reports/integration-core-akshare-llm-feishu-retry-local/integration-acceptance-report.json`
+- `AKShare`：passed，样本标的 `000001`、`600519`，返回 58 行真实日线数据。
+- `LLM`：passed，本地 OpenAI 兼容接口 `http://127.0.0.1:8317/v1`，模型 `gpt-5.4-mini`，完成 3 条结构化样本和 1 条低信息量样本降级检查。
+- `飞书`：passed，测试群收到 P0、P1 和 SUMMARY 共 3 条消息。
+- `Tushare`：skipped，`required=false`，当前不参与核心准入；如后续开通 `daily` 权限，可作为增强数据源单独验收。
+
+AKShare 本地历史验收样本：
+
+- 文件：`data/samples/akshare_acceptance_daily_bars.csv`
+- 来源：真实 AKShare 日线接口。
+- 区间：2024-01-02 至 2024-06-14。
+- 标的：`000001`、`600519`。
+- 规模：214 行，每个标的 107 个交易日。
+- 字段：`trade_date`、`symbol`、`open`、`high`、`low`、`close`、`volume`、`turnover`。

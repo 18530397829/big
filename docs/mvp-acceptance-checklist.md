@@ -1,11 +1,12 @@
 # MVP 验收清单
 
-验收证据见 [docs/mvp-acceptance-evidence.md](mvp-acceptance-evidence.md)。真实 AKShare/Tushare、真实 LLM 和真实飞书 Webhook 的端到端稳定性验收按 [docs/integration-acceptance-runbook.md](integration-acceptance-runbook.md) 单独执行。
+验收证据见 [docs/mvp-acceptance-evidence.md](mvp-acceptance-evidence.md)。真实 AKShare、本地 LLM 和真实飞书 Webhook 的核心端到端稳定性验收按 [docs/integration-acceptance-runbook.md](integration-acceptance-runbook.md) 单独执行；Tushare 为可选增强项。
 
 ## M1 数据与持仓底座
 
 - [x] 能读取示例持仓。
 - [x] 能读取示例日线、分钟线和板块数据。
+- [x] 能使用 AKShare 历史数据支撑 60 交易日以上本地验收样本。
 - [x] 能区分可交易池、观察池、禁入池和持仓池。
 
 ## M2 因子与评分引擎
