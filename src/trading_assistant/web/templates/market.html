@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}市场环境 - A 股短线交易辅助系统{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <h1>市场环境</h1>
+      {% if view is defined %}
+        <p>{{ view.summary.sector_count }} 个样例板块，平均涨幅 {{ view.summary.average_sector_pct }}，环境分 {{ view.summary.market_score }}。</p>
+      {% else %}
+        <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
+      {% endif %}
+    </div>
+    {% if view is defined and view.summary.data_freshness is defined %}
+      <p class="data-freshness">{{ view.summary.data_freshness }}</p>
+    {% endif %}
+  </section>
+
+  {% if view is defined %}
+    <section class="metric-grid" aria-label="市场环境指标">
+      <article class="metric-card">
+        <span class="metric-label">环境分</span>
+        <strong>{{ view.summary.market_score }}</strong>
+        <span class="metric-note">综合评分</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">平均涨幅</span>
+        <strong>{{ view.summary.average_sector_pct }}</strong>
+        <span class="metric-note">样例板块</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">板块数量</span>
+        <strong>{{ view.summary.sector_count }}</strong>
+        <span class="metric-note">纳入环境分</span>
+      </article>
+    </section>
+
+    {% if view.sectors %}
+      <section class="section-card" aria-label="板块明细">
+        <div class="data-table-shell" tabindex="0" aria-label="板块明细横向滚动表格">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">板块</th>
+                <th scope="col">类型</th>
+                <th scope="col" class="numeric">涨跌幅</th>
+                <th scope="col" class="numeric">成交额</th>
+                <th scope="col" class="numeric">涨停数</th>
+                <th scope="col">领涨股</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sector in view.sectors %}
+                <tr>
+                  <td>{{ sector.sector_name }}</td>
+                  <td>{{ sector.sector_type }}</td>
+                  <td class="numeric tone-{{ sector.pct_tone }}">{{ sector.pct_chg }}</td>
+                  <td class="numeric">{{ sector.turnover }}</td>
+                  <td class="numeric">{{ sector.limit_up_count }}</td>
+                  <td>{{ sector.leader_symbol }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% else %}
+      <section class="empty-state" aria-label="板块明细">
+        <h2>暂无板块数据</h2>
+        <p>暂无板块数据。请先运行盘后任务或检查样例数据。</p>
+      </section>
+    {% endif %}
+  {% else %}
+    <section class="empty-state" aria-label="板块明细">
+      <h2>暂无可用数据</h2>
+      <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
+    </section>
+  {% endif %}
+{% endblock %}

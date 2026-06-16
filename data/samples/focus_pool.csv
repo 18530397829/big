@@ -1,0 +1,4 @@
+symbol,name,focus_reason,tags,priority,status
+000001,平安银行,银行主线仍强,银行|低估,5,active
+300002,样例制造,盘中观察样例,制造|观察,3,active
+600519,贵州茅台,白酒估值等待,白酒,2,archived

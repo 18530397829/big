@@ -6,16 +6,27 @@
       <h1>A 股短线交易辅助系统</h1>
       <p>盘前、盘中、盘后状态汇总。</p>
     </div>
+    {% if view.page_generated_at is defined %}
+      <p class="data-freshness">{{ view.page_generated_at }}</p>
+    {% elif view.data_freshness is defined %}
+      <p class="data-freshness">{{ view.data_freshness }}</p>
+    {% endif %}
   </section>
 
   <section class="metric-grid" aria-label="核心指标">
     <article class="metric-card">
-      <span class="metric-label">市场环境分</span>
+      <div class="metric-card__header">
+        <span class="metric-label">市场环境分</span>
+        <span class="risk-badge risk-badge--info">环境</span>
+      </div>
       <strong>{{ view.market_score }}</strong>
       <span class="metric-note">综合评分</span>
     </article>
     <article class="metric-card">
-      <span class="metric-label">持仓风险</span>
+      <div class="metric-card__header">
+        <span class="metric-label">持仓风险</span>
+        <span class="risk-badge risk-badge--{{ view.portfolio_risk_key | default('neutral') }}">{{ view.portfolio_risk }}</span>
+      </div>
       <strong>{{ view.portfolio_risk }}</strong>
       {% if view.holding_count is defined and view.total_market_value is defined %}
         <span class="metric-note">{{ view.holding_count }} 只持仓 / 市值 {{ view.total_market_value }}</span>
@@ -24,7 +35,10 @@
       {% endif %}
     </article>
     <article class="metric-card">
-      <span class="metric-label">重点候选</span>
+      <div class="metric-card__header">
+        <span class="metric-label">重点候选</span>
+        <span class="risk-badge risk-badge--info">候选</span>
+      </div>
       <strong>{{ view.candidate_count }}</strong>
       {% if view.top_candidate is defined %}
         <span class="metric-note">{{ view.top_candidate }}</span>
@@ -32,24 +46,42 @@
         <span class="metric-note">待观察标的</span>
       {% endif %}
     </article>
-    <article class="metric-card">
-      <span class="metric-label">P0/P1 提醒</span>
-      <strong>{{ view.critical_alerts }}</strong>
-      <span class="metric-note">严重告警</span>
+    <article class="metric-card {% if view.critical_alerts > 0 %}metric-card--critical{% else %}metric-card--quiet{% endif %}">
+      <div class="metric-card__header">
+        <span class="metric-label">{{ view.intraday_priority_label | default("P1 提醒") }}</span>
+        <span class="risk-badge risk-badge--{% if view.critical_alerts > 0 %}critical{% else %}low{% endif %}">
+          {% if view.critical_alerts > 0 %}需处理{% else %}平稳{% endif %}
+        </span>
+      </div>
+      <strong>{{ view.critical_alert_label | default(view.critical_alerts) }}</strong>
+      <span class="metric-note">{{ view.watch_items | default(0) }} 个监控项</span>
     </article>
   </section>
 
   <section class="section-list" aria-label="工作区">
     {% for section in view.sections %}
-      <article class="section-card">
+      <article class="workspace-card">
         {% if section is mapping %}
-          <h2>{{ section["title"] }}</h2>
+          <div class="workspace-card__header">
+            <h2>{{ section["title"] }}</h2>
+            {% if section["status"] is defined %}
+              <span class="risk-badge risk-badge--{{ section["status_key"] | default('neutral') }}">{{ section["status"] }}</span>
+            {% endif %}
+          </div>
           {% if section["summary"] is defined %}
             <p>{{ section["summary"] }}</p>
           {% endif %}
+          {% if section["data_freshness"] is defined %}
+            <p class="data-freshness">{{ section["data_freshness"] }}</p>
+          {% endif %}
+          {% if section["href"] %}
+            <a class="card-link" href="{{ section["href"] }}">{{ section["action"] | default("查看") }}</a>
+          {% else %}
+            <span class="action-unavailable">{{ section["action"] | default("暂无详情") }}</span>
+          {% endif %}
         {% else %}
           <h2>{{ section }}</h2>
-          <p>模块已接入仪表盘 shell，等待后续任务填充实时数据。</p>
+          <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
         {% endif %}
       </article>
     {% endfor %}

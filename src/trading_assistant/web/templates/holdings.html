@@ -9,45 +9,58 @@
       {% if view is defined %}
         <p>{{ view.summary.holding_count }} 只持仓，总市值 {{ view.summary.total_market_value }}，最高风险 {{ view.summary.max_risk_level }}。</p>
       {% else %}
-        <p>页面数据加载中，请重启服务后刷新。</p>
+        <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
       {% endif %}
     </div>
+    {% if view is defined and view.summary.data_freshness is defined %}
+      <p class="data-freshness">{{ view.summary.data_freshness }}</p>
+    {% endif %}
   </section>
 
   {% if view is defined %}
-    <section class="section-card" aria-label="持仓明细">
-      <table>
-        <thead>
-          <tr>
-            <th>代码</th>
-            <th>名称</th>
-            <th>数量</th>
-            <th>市值</th>
-            <th>浮盈亏</th>
-            <th>风险</th>
-            <th>建议</th>
-            <th>原因</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for holding in view.holdings %}
-            <tr>
-              <td>{{ holding.symbol }}</td>
-              <td>{{ holding.name }}</td>
-              <td>{{ holding.quantity }}</td>
-              <td>{{ holding.market_value }}</td>
-              <td>{{ holding.unrealized_return_pct }}</td>
-              <td>{{ holding.risk_level }}</td>
-              <td>{{ holding.action_advice }}</td>
-              <td>{{ holding.reasons }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
+    {% if view.holdings %}
+      <section class="section-card" aria-label="持仓明细">
+        <div class="data-table-shell" tabindex="0" aria-label="持仓明细横向滚动表格">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col" class="identity-cell">标的</th>
+                <th scope="col" class="numeric">数量</th>
+                <th scope="col" class="numeric">市值</th>
+                <th scope="col" class="numeric">浮盈亏</th>
+                <th scope="col">风险</th>
+                <th scope="col">建议</th>
+                <th scope="col" class="wrap">原因</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for holding in view.holdings %}
+                <tr id="{{ holding.row_id }}">
+                  <td class="identity-cell">{{ holding.identity }}</td>
+                  <td class="numeric">{{ holding.quantity }}</td>
+                  <td class="numeric">{{ holding.market_value }}</td>
+                  <td class="numeric tone-{{ holding.return_tone }}">{{ holding.unrealized_return_pct }}</td>
+                  <td class="risk-cell">
+                    <span class="risk-badge risk-badge--{{ holding.risk_level_key }}">{{ holding.risk_level }}</span>
+                  </td>
+                  <td>{{ holding.action_advice }}</td>
+                  <td class="wrap">{{ holding.reasons }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% else %}
+      <section class="empty-state" aria-label="持仓明细">
+        <h2>暂无持仓数据</h2>
+        <p>暂无持仓数据。请先导入持仓后再查看风险。</p>
+      </section>
+    {% endif %}
   {% else %}
-    <section class="section-card" aria-label="持仓明细">
-      <p>页面数据加载中，请重启服务后刷新。</p>
+    <section class="empty-state" aria-label="持仓明细">
+      <h2>暂无可用数据</h2>
+      <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
     </section>
   {% endif %}
 {% endblock %}

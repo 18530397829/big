@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}盘中提醒 - A 股短线交易辅助系统{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <h1>盘中提醒</h1>
+      {% if view is defined %}
+        <p>{{ view.watch_items }} 个监控项，{{ view.critical_label }}。</p>
+      {% else %}
+        <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
+      {% endif %}
+    </div>
+    {% if view is defined and view.data_freshness is defined %}
+      <p class="data-freshness">{{ view.data_freshness }}</p>
+    {% endif %}
+  </section>
+
+  {% if view is defined %}
+    <section class="metric-grid" aria-label="盘中提醒指标">
+      <article class="metric-card{% if view.critical_alerts > 0 %} metric-card--critical{% else %} metric-card--quiet{% endif %}">
+        <span class="metric-label">{{ view.priority_label }}</span>
+        <strong>{{ view.critical_label }}</strong>
+        <span class="metric-note">关键提醒</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">监控项</span>
+        <strong>{{ view.watch_items }}</strong>
+        <span class="metric-note">持仓与候选</span>
+      </article>
+    </section>
+
+    {% if view["items"] %}
+      <section class="section-card" aria-label="盘中监控项">
+        <div class="data-table-shell" tabindex="0" aria-label="盘中监控项横向滚动表格">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col" class="identity-cell">标的</th>
+                <th scope="col" class="numeric">最新价</th>
+                <th scope="col" class="numeric">涨跌幅</th>
+                <th scope="col">优先级</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in view["items"] %}
+                <tr>
+                  <td class="identity-cell">{{ item.identity }}</td>
+                  <td class="numeric">{{ item.latest_price }}</td>
+                  <td class="numeric tone-{{ item.change_tone }}">{{ item.change_pct }}</td>
+                  <td><span class="risk-badge risk-badge--{{ item.priority_key }}">{{ item.priority }}</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% else %}
+      <section class="empty-state" aria-label="盘中监控项">
+        <h2>暂无盘中监控项</h2>
+        <p>暂无盘中监控项。请先导入持仓后再查看提醒。</p>
+      </section>
+    {% endif %}
+  {% else %}
+    <section class="empty-state" aria-label="盘中监控项">
+      <h2>暂无可用数据</h2>
+      <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
+    </section>
+  {% endif %}
+{% endblock %}

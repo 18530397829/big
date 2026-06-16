@@ -9,21 +9,23 @@ if str(SRC) not in sys.path:
 
 def main() -> None:
     from trading_assistant.db.base import Base
-    from trading_assistant.db.repositories import HoldingRepository
+    from trading_assistant.db.repositories import FocusStockRepository, HoldingRepository
     from trading_assistant.db.session import build_engine, build_session_factory
+    from trading_assistant.pools.focus_pool import load_focus_pool_csv
     from trading_assistant.portfolio.importer import load_holdings_csv
     from trading_assistant.settings import Settings
 
     holdings = load_holdings_csv(Path("data/samples/holdings.csv"))
+    focus_stocks = load_focus_pool_csv(Path("data/samples/focus_pool.csv"))
     settings = Settings()
     engine = build_engine(settings.database_url)
     try:
         Base.metadata.create_all(engine)
         session_factory = build_session_factory(engine)
         with session_factory() as session:
-            repo = HoldingRepository(session)
+            holding_repo = HoldingRepository(session)
             for holding in holdings:
-                repo.upsert_holding(
+                holding_repo.upsert_holding(
                     symbol=holding.symbol,
                     name=holding.name,
                     quantity=holding.quantity,
@@ -33,10 +35,13 @@ def main() -> None:
                     theme=holding.theme,
                     buy_reason=holding.buy_reason,
                 )
+            focus_repo = FocusStockRepository(session)
+            focus_repo.upsert_many(focus_stocks, mode="merge")
     finally:
         engine.dispose()
 
     print(f"seeded {len(holdings)} sample holdings into {settings.database_url}")
+    print(f"seeded {len(focus_stocks)} sample focus stocks into {settings.database_url}")
     for holding in holdings:
         print(
             f"{holding.symbol} {holding.name} "

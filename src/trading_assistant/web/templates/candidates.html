@@ -7,26 +7,106 @@
     <div>
       <h1>重点候选</h1>
       {% if view is defined %}
-        <p>从样例日线、板块和事件数据筛选出 {{ view.candidate_count }} 只候选。</p>
+        <p>主候选 {{ view.candidate_count }} 只，池外观察 {{ view.outside_observation_count }} 只。</p>
       {% else %}
-        <p>页面数据加载中，请重启服务后刷新。</p>
+        <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
       {% endif %}
     </div>
+    {% if view is defined and view.data_freshness is defined %}
+      <p class="data-freshness">{{ view.data_freshness }}</p>
+    {% endif %}
   </section>
 
   {% if view is defined %}
-    <section class="section-list" aria-label="候选列表">
-      {% for candidate in view.candidates %}
-        <article class="section-card">
-          <h2>{{ candidate.symbol }} {{ candidate.name }}</h2>
-          <p>机会分 {{ candidate.opportunity_score }} / 计划置信 {{ candidate.plan_confidence_score }}</p>
-          <p>{{ candidate.reasons }}</p>
-        </article>
-      {% endfor %}
-    </section>
+    {% if view.candidates %}
+      <section class="candidate-list" aria-label="候选列表">
+        {% for candidate in view.candidates %}
+          <article id="{{ candidate.detail_id }}" class="candidate-card">
+            <div class="candidate-card__header">
+              <div>
+                <h2>{{ candidate.symbol }} {{ candidate.name }}</h2>
+                <p>{{ candidate.summary_reason }}</p>
+              </div>
+              <span class="risk-badge risk-badge--info">{{ candidate.event_label }}</span>
+              <span class="risk-badge risk-badge--positive">{{ candidate.pool_scope_label }}</span>
+            </div>
+            <dl class="candidate-metrics">
+              <div>
+                <dt>机会分</dt>
+                <dd class="numeric tone-{{ candidate.score_tone }}">{{ candidate.opportunity_score }}</dd>
+              </div>
+              <div>
+                <dt>计划置信</dt>
+                <dd class="numeric tone-{{ candidate.confidence_tone }}">{{ candidate.plan_confidence_score }}</dd>
+              </div>
+            </dl>
+            <details class="candidate-detail">
+              <summary>查看触发条件</summary>
+              <ul>
+                {% for reason in candidate.reason_items %}
+                  <li>{{ reason }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+            <div class="candidate-actions">
+              {% if candidate.holding_href %}
+                <a class="card-link" href="{{ candidate.holding_href }}">查看持仓</a>
+              {% else %}
+                <span class="action-unavailable">暂无持仓</span>
+              {% endif %}
+              {% if candidate.backtest_href %}
+                <a class="card-link" href="{{ candidate.backtest_href }}">查看回测</a>
+              {% else %}
+                <span class="action-unavailable">暂无回测</span>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+    {% else %}
+      <section class="empty-state" aria-label="候选列表">
+        <h2>暂无候选标的</h2>
+        <p>暂无候选标的。请先运行盘后选股任务。</p>
+      </section>
+    {% endif %}
+    {% if view.outside_observations %}
+      <section class="candidate-list outside-observation-list" aria-label="池外观察">
+        <h2>池外观察</h2>
+        {% for candidate in view.outside_observations %}
+          <article id="{{ candidate.detail_id }}" class="candidate-card candidate-card--outside">
+            <div class="candidate-card__header">
+              <div>
+                <h2>{{ candidate.symbol }} {{ candidate.name }}</h2>
+                <p>{{ candidate.summary_reason }}</p>
+              </div>
+              <span class="risk-badge risk-badge--neutral">{{ candidate.pool_scope_label }}</span>
+            </div>
+            <dl class="candidate-metrics">
+              <div>
+                <dt>机会分</dt>
+                <dd class="numeric tone-{{ candidate.score_tone }}">{{ candidate.opportunity_score }}</dd>
+              </div>
+              <div>
+                <dt>计划置信</dt>
+                <dd class="numeric tone-{{ candidate.confidence_tone }}">{{ candidate.plan_confidence_score }}</dd>
+              </div>
+            </dl>
+            <details class="candidate-detail">
+              <summary>查看触发条件</summary>
+              <ul>
+                {% for reason in candidate.reason_items %}
+                  <li>{{ reason }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+          </article>
+        {% endfor %}
+      </section>
+    {% endif %}
   {% else %}
-    <section class="section-card" aria-label="候选列表">
-      <p>页面数据加载中，请重启服务后刷新。</p>
+    <section class="empty-state" aria-label="候选列表">
+      <h2>暂无可用数据</h2>
+      <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
     </section>
   {% endif %}
 {% endblock %}

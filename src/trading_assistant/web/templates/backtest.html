@@ -7,11 +7,22 @@
     <div>
       <h1>回测复盘</h1>
       {% if view is defined %}
-        <p>{{ view.summary.signal_count }} 条样例信号，1日胜率 {{ view.summary.win_rate_1d }}，1日平均收益 {{ view.summary.avg_return_1d }}，最大回撤 {{ view.summary.max_drawdown_1d }}，盈亏比 {{ view.summary.profit_loss_ratio_1d }}。</p>
+        {% if view.summary.has_enough_metrics %}
+          <p>{{ view.summary.signal_count }} 条样例信号，1日胜率 {{ view.summary.win_rate_1d }}，1日平均收益 {{ view.summary.avg_return_1d }}，最大回撤 {{ view.summary.max_drawdown_1d }}，盈亏比 {{ view.summary.profit_loss_ratio_1d }}。</p>
+        {% else %}
+          <p>{{ view.summary.signal_count }} 条样例信号，1日胜率 样本不足，1日平均收益 样本不足，最大回撤 样本不足，盈亏比 样本不足。</p>
+          {% if view.summary.insufficient_metrics_message is defined %}
+            <p>{{ view.summary.insufficient_metrics_message }}</p>
+            <a class="card-link" href="/candidates">查看候选</a>
+          {% endif %}
+        {% endif %}
       {% else %}
-        <p>页面数据加载中，请重启服务后刷新。</p>
+        <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
       {% endif %}
     </div>
+    {% if view is defined and view.summary.data_freshness is defined %}
+      <p class="data-freshness">{{ view.summary.data_freshness }}</p>
+    {% endif %}
   </section>
 
   {% if view is defined %}
@@ -21,52 +32,60 @@
         <strong>{{ view.summary.transaction_cost_rate }}</strong>
         <span class="metric-note">单笔成本率</span>
       </article>
-      <article class="metric-card">
+      <article class="metric-card{% if not view.summary.has_enough_metrics %} metric-card--muted{% endif %}">
         <span class="metric-label">扣成本胜率</span>
-        <strong>{{ view.summary.net_win_rate_1d }}</strong>
+        <strong>{% if view.summary.has_enough_metrics %}{{ view.summary.net_win_rate_1d }}{% else %}样本不足{% endif %}</strong>
         <span class="metric-note">1 日净收益</span>
       </article>
-      <article class="metric-card">
+      <article class="metric-card{% if not view.summary.has_enough_metrics %} metric-card--muted{% endif %}">
         <span class="metric-label">错误卖出率</span>
-        <strong>{{ view.summary.false_sell_rate_5d }}</strong>
+        <strong>{% if view.summary.has_enough_metrics %}{{ view.summary.false_sell_rate_5d }}{% else %}样本不足{% endif %}</strong>
         <span class="metric-note">5 日收益转正</span>
       </article>
-      <article class="metric-card">
+      <article class="metric-card{% if not view.summary.has_enough_metrics %} metric-card--muted{% endif %}">
         <span class="metric-label">错过反弹率</span>
-        <strong>{{ view.summary.missed_rebound_rate_5d }}</strong>
+        <strong>{% if view.summary.has_enough_metrics %}{{ view.summary.missed_rebound_rate_5d }}{% else %}样本不足{% endif %}</strong>
         <span class="metric-note">5 日最大反弹超过 3%</span>
       </article>
     </section>
 
-    <section class="section-card" aria-label="样例信号回测">
-      <table>
-        <thead>
-          <tr>
-            <th>日期</th>
-            <th>代码</th>
-            <th>名称</th>
-            <th>信号分</th>
-            <th>1日收益</th>
-            <th>5日最大反弹</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for signal in view.signals %}
-            <tr>
-              <td>{{ signal.trade_date }}</td>
-              <td>{{ signal.symbol }}</td>
-              <td>{{ signal.name }}</td>
-              <td>{{ signal.score }}</td>
-              <td>{{ signal.return_1d }}</td>
-              <td>{{ signal.max_return_5d }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
+    {% if view.signals %}
+      <section class="section-card" aria-label="样例信号回测">
+        <div class="data-table-shell" tabindex="0" aria-label="样例信号回测横向滚动表格">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col" class="identity-cell">标的</th>
+                <th scope="col">日期</th>
+                <th scope="col" class="numeric">信号分</th>
+                <th scope="col" class="numeric">1日收益</th>
+                <th scope="col" class="numeric">5日最大反弹</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for signal in view.signals %}
+                <tr id="{{ signal.row_id }}">
+                  <td class="identity-cell">{{ signal.identity }}</td>
+                  <td>{{ signal.trade_date }}</td>
+                  <td class="numeric">{{ signal.score }}</td>
+                  <td class="numeric tone-{{ signal.return_1d_tone }}">{{ signal.return_1d }}</td>
+                  <td class="numeric tone-{{ signal.max_return_5d_tone }}">{{ signal.max_return_5d }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% else %}
+      <section class="empty-state" aria-label="样例信号回测">
+        <h2>暂无回测信号</h2>
+        <p>暂无回测信号。请先生成候选信号后再查看复盘。</p>
+      </section>
+    {% endif %}
   {% else %}
-    <section class="section-card" aria-label="样例信号回测">
-      <p>页面数据加载中，请重启服务后刷新。</p>
+    <section class="empty-state" aria-label="样例信号回测">
+      <h2>暂无可用数据</h2>
+      <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
     </section>
   {% endif %}
 {% endblock %}

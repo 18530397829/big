@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}关注股票池 - A 股短线交易辅助系统{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <h1>关注股票池</h1>
+      {% if view is defined %}
+        <p>{{ view.summary.active_count }} 只启用，{{ view.summary.paused_count }} 只暂停，{{ view.summary.archived_count }} 只归档。</p>
+      {% else %}
+        <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if view is defined %}
+    {% if view.import_result %}
+      <section class="notice notice--success" aria-label="导入结果">
+        <p>{{ view.import_result }}</p>
+      </section>
+    {% endif %}
+    {% if view.import_error %}
+      <section class="notice notice--error" aria-label="导入错误">
+        <p>{{ view.import_error }}</p>
+      </section>
+    {% endif %}
+
+    <section class="section-card import-panel" aria-label="批量导入">
+      <h2>批量导入</h2>
+      <form action="/focus-pool/import" method="post" enctype="multipart/form-data" class="import-form">
+        <label>
+          CSV 文件
+          <input type="file" name="file" accept=".csv,text/csv" required>
+        </label>
+        <label>
+          导入模式
+          <select name="mode">
+            <option value="merge" selected>merge 合并更新</option>
+            <option value="replace">replace 归档未上传股票</option>
+          </select>
+        </label>
+        <button type="submit" class="button-primary">导入</button>
+      </form>
+    </section>
+
+    {% if view.focus_stocks %}
+      <section class="section-card" aria-label="关注股票池明细">
+        <div class="data-table-shell" tabindex="0" aria-label="关注股票池横向滚动表格">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col" class="identity-cell">标的</th>
+                <th scope="col">状态</th>
+                <th scope="col" class="numeric">优先级</th>
+                <th scope="col">标签</th>
+                <th scope="col" class="wrap">关注理由</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for stock in view.focus_stocks %}
+                <tr>
+                  <td class="identity-cell">{{ stock.symbol }} {{ stock.display_name }}</td>
+                  <td><span class="risk-badge risk-badge--{{ stock.status_key }}">{{ stock.status_label }}</span></td>
+                  <td class="numeric">{{ stock.priority }}</td>
+                  <td>{{ stock.tags_label }}</td>
+                  <td class="wrap">{{ stock.focus_reason }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% else %}
+      <section class="empty-state" aria-label="关注股票池明细">
+        <h2>暂无关注股票</h2>
+        <p>暂无关注股票。请先批量导入自选股票。</p>
+      </section>
+    {% endif %}
+  {% else %}
+    <section class="empty-state" aria-label="关注股票池明细">
+      <h2>暂无可用数据</h2>
+      <p>暂无可用数据。请检查样例数据或任务日志后刷新。</p>
+    </section>
+  {% endif %}
+{% endblock %}

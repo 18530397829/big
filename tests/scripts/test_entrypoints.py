@@ -39,6 +39,29 @@ def test_seed_sample_data_seeds_sqlite_and_prints_loaded_holdings(tmp_path: Path
     assert "seeded 2 sample holdings" in result.stdout
     assert "000001 平安银行 market_value=10300.00 return=3.00%" in result.stdout
     assert "600519 贵州茅台 market_value=15180.00 return=1.20%" in result.stdout
+    assert "seeded 3 sample focus stocks" in result.stdout
+
+
+def test_import_focus_pool_script_imports_csv_to_sqlite(tmp_path: Path):
+    database_path = tmp_path / "focus.db"
+    csv_path = tmp_path / "focus_pool.csv"
+    csv_path.write_text(
+        "symbol,name,focus_reason,tags,priority,status\n"
+        "000002,万科A,地产修复,地产|低位,4,active\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "import_focus_pool.py",
+        extra_env={
+            "DATABASE_URL": f"sqlite:///{database_path.as_posix()}",
+            "FOCUS_POOL_CSV": str(csv_path),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "imported 1 focus stocks in merge mode" in result.stdout
+    assert "000002 万科A priority=4 status=active" in result.stdout
 
 
 def test_daily_after_close_entrypoint_outputs_plan_and_sample_summary():
@@ -61,6 +84,6 @@ def test_intraday_monitor_entrypoint_outputs_plan_and_sample_watchlist():
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == build_job_plan()["intraday_monitor"]
     assert "盘中样例摘要" in result.stderr
-    assert "watch_items=2" in result.stderr
+    assert "watch_items=3" in result.stderr
     assert "000001 平安银行 latest_price=10.36 change=0.58%" in result.stderr
     assert "600519 贵州茅台 latest_price=1512.00 change=-0.40%" in result.stderr

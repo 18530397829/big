@@ -11,10 +11,13 @@
       <div class="app-header__inner">
         <a class="app-brand" href="/">A 股短线交易辅助系统</a>
         <nav class="app-nav" aria-label="主导航">
-          <a href="/">仪表盘</a>
-          <a href="/holdings">持仓风险</a>
-          <a href="/candidates">重点候选</a>
-          <a href="/backtest">回测复盘</a>
+          <a href="/"{% if request.url.path == "/" %} aria-current="page"{% endif %}>仪表盘</a>
+          <a href="/holdings"{% if request.url.path == "/holdings" %} aria-current="page"{% endif %}>持仓风险</a>
+          <a href="/market"{% if request.url.path == "/market" %} aria-current="page"{% endif %}>市场环境</a>
+          <a href="/focus-pool"{% if request.url.path == "/focus-pool" %} aria-current="page"{% endif %}>关注股票池</a>
+          <a href="/candidates"{% if request.url.path == "/candidates" %} aria-current="page"{% endif %}>重点候选</a>
+          <a href="/intraday"{% if request.url.path == "/intraday" %} aria-current="page"{% endif %}>盘中提醒</a>
+          <a href="/backtest"{% if request.url.path == "/backtest" %} aria-current="page"{% endif %}>回测复盘</a>
         </nav>
       </div>
     </header>
